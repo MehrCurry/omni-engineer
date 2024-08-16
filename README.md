@@ -43,8 +43,22 @@ I see this framework as more suitable for people who actually want to code with 
    ```
 4. Run the main script:
    ```
-   python main.py
+   python main.py [--model MODEL] [--openai-api-base BASE_URL] [--openai-api-key API_KEY]
    ```
+
+## 🔧 Configuration
+Omni Engineer now uses LiteLLM, which provides a unified interface to various AI models and providers. This allows for greater flexibility in model selection and API usage. The script accepts the following command-line parameters:
+
+- `--model`: Specify the AI model to use (default is "claude-3-sonnet-20240229")
+- `--openai-api-base`: Set the base URL for the API (useful for using different providers)
+- `--openai-api-key`: Provide the API key directly in the command line
+
+Example usage:
+```
+python main.py --model gpt-4 --openai-api-base https://api.openai.com/v1 --openai-api-key your_api_key_here
+```
+
+These parameters allow you to easily switch between different models or providers without modifying the code.
 ## 📚 Usage
 After launching the console, enter commands or questions as needed. The AI will respond accordingly, assisting with various development tasks.
 ## 🤖 AI Models
