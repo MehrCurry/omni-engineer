@@ -1,6 +1,7 @@
 import os
-from openai import OpenAI
 import sys
+import argparse
+from litellm import completion
 from dotenv import load_dotenv
 from colorama import init, Fore, Back, Style
 import difflib
@@ -30,18 +31,17 @@ is_diff_on = True
 
 init(autoreset=True)
 load_dotenv()
-client = OpenAI(
-    base_url="https://openrouter.ai/api/v1",
-    api_key=os.getenv("OPENROUTER_API_KEY"),
-)
+# LiteLLM doesn't require a client initialization
 
-DEFAULT_MODEL = "anthropic/claude-3.5-sonnet"
-EDITOR_MODEL = "google/gemini-pro-1.5"
+DEFAULT_MODEL = "claude-3-sonnet-20240229"
+EDITOR_MODEL = "gemini-pro-1.5"
+BASE_URL = None
+API_KEY = None
 # Other common models:
-# "openai/gpt-4o-2024-08-06"
-# "meta-llama/llama-3.1-405b-instruct"
-# "anthropic/claude-3-haiku"
-# "mistralai/mistral-large"
+# "gpt-4"
+# "llama-2-70b-chat"
+# "claude-3-haiku-20240307"
+# "mistral-large-latest"
 
 SYSTEM_PROMPT = """You are an incredible developer assistant. You have the following traits:
 - You write clean, efficient code
@@ -221,10 +221,12 @@ def print_colored(text, color=Fore.WHITE, style=Style.NORMAL, end='\n'):
 
 
 def get_streaming_response(messages, model):
-    stream = client.chat.completions.create(
+    stream = completion(
         model=model,
         messages=messages,
         stream=True,
+        base_url=BASE_URL,
+        api_key=API_KEY,
     )
     full_response = ""
     for chunk in stream:
@@ -361,7 +363,7 @@ async def handle_edit_command(default_chat_history, editor_chat_history, filepat
         result = ""
         line_index = 0  
 
-        for chunk in client.chat.completions.create(
+        for chunk in completion(
             model=EDITOR_MODEL,   
             messages=editor_chat_history,
             stream=True,
@@ -650,7 +652,20 @@ def print_welcome_message():
 
 
 
+def parse_arguments():
+    parser = argparse.ArgumentParser(description="AI Developer Console")
+    parser.add_argument("--model", default=DEFAULT_MODEL, help="Model to use for completion")
+    parser.add_argument("--openai-api-base", help="Base URL for the OpenAI API")
+    parser.add_argument("--openai-api-key", help="API key for OpenAI")
+    return parser.parse_args()
+
 async def main():
+    args = parse_arguments()
+    global DEFAULT_MODEL, BASE_URL, API_KEY
+    DEFAULT_MODEL = args.model
+    BASE_URL = args.openai_api_base
+    API_KEY = args.openai_api_key
+
     default_chat_history = [{"role": "system", "content": SYSTEM_PROMPT}]
     editor_chat_history = [{"role": "system", "content": EDITOR_PROMPT}]
     clear_console()
