@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from colorama import init, Fore, Back, Style
 import difflib
 import asyncio
-from duckduckgo_search import AsyncDDGS
+from     import AsyncDDGS
 import json
 from pygments import highlight
 from pygments.lexers import get_lexer_by_name
@@ -232,7 +232,7 @@ def get_streaming_response(messages, model, api_base, api_key):
     }
     if api_base:
         completion_args["base_url"] = api_base
-    
+
     stream = completion(**completion_args)
     full_response = ""
     for chunk in stream:
