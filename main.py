@@ -224,13 +224,16 @@ def print_colored(text, color=Fore.WHITE, style=Style.NORMAL, end='\n'):
 
 
 def get_streaming_response(messages, model, api_base, api_key):
-    stream = completion(
-        model=model,
-        messages=messages,
-        stream=True,
-        base_url=api_base,
-        api_key=api_key,
-    )
+    completion_args = {
+        "model": model,
+        "messages": messages,
+        "stream": True,
+        "api_key": api_key,
+    }
+    if api_base:
+        completion_args["base_url"] = api_base
+    
+    stream = completion(**completion_args)
     full_response = ""
     for chunk in stream:
         if chunk.choices[0].delta.content is not None:
@@ -661,8 +664,8 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description="AI Developer Console")
     parser.add_argument("--default-model", default=os.getenv("DEFAULT_MODEL", DEFAULT_MODEL), help="Model to use for default completion")
     parser.add_argument("--editor-model", default=os.getenv("EDITOR_MODEL", EDITOR_MODEL), help="Model to use for editor completion")
-    parser.add_argument("--default-api-base", default=os.getenv("DEFAULT_API_BASE"), help="Base URL for the default model API")
-    parser.add_argument("--editor-api-base", default=os.getenv("EDITOR_API_BASE"), help="Base URL for the editor model API")
+    parser.add_argument("--default-api-base", default=os.getenv("DEFAULT_API_BASE") or None, help="Base URL for the default model API (optional)")
+    parser.add_argument("--editor-api-base", default=os.getenv("EDITOR_API_BASE") or None, help="Base URL for the editor model API (optional)")
     parser.add_argument("--default-api-key", default=os.getenv("DEFAULT_API_KEY"), help="API key for default model")
     parser.add_argument("--editor-api-key", default=os.getenv("EDITOR_API_KEY"), help="API key for editor model")
     return parser.parse_args()
