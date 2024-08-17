@@ -1,19 +1,21 @@
-# 🧠 Omni Engineer: An AI Agents Powered Developer Console
-An intelligent assistant designed to enhance your development workflow.
-## 🔍 Overview
-Omni Engineer is a console-based tool that integrates AI capabilities into your development process. It offers smart responses to coding queries, file management, web searching, and image processing functionalities.
+# 🧠 Omni Engineer: An AI-Powered Developer Console
+An intelligent assistant designed to enhance your development workflow with flexible model selection.
 
-Omni Engineer is a spiritual successor to [Claude Engineer](https://github.com/Doriandarko/claude-engineer). It was built from my extensive usage of hand-made AI tools, trial and error, and feedback received. Compared to Claude Engineer, this new script allows for more control via simplicity while leaving some of the other functionalities like a fully automated flow, or the ability to run code. 
-At the same time, bring some cool new stuff like multi-file editing and save/resume of chats.
-I see this framework as more suitable for people who actually want to code with a better assistant on their side, versus something that is fully automatic.
+## 🔍 Overview
+Omni Engineer is a console-based tool that integrates AI capabilities into your development process. It offers smart responses to coding queries, file management, web searching, and image processing functionalities. The latest update introduces model-specific parameters, allowing users to choose and configure different AI models for various tasks.
+
+Omni Engineer is a spiritual successor to [Claude Engineer](https://github.com/Doriandarko/claude-engineer). It was built from extensive usage of hand-made AI tools, trial and error, and feedback received. Compared to Claude Engineer, this new script allows for more control via simplicity while introducing new functionalities like multi-file editing, save/resume of chats, and now, flexible model selection.
+
+This framework is suitable for developers who want to code with an advanced AI assistant, offering customization options to tailor the experience to their needs.
 
 ## 🌟 Features
-- AI-Powered Responses
+- AI-Powered Responses with Flexible Model Selection
 - File Management (Add, Edit, Create)
 - Web Searching
 - Image Processing
 - Undo Functionality
 - Conversation Save & Load
+- Model-Specific Configuration Options
 ## 🖥️ Commands
 - `/add <filepath>`: Add files to AI context
 - `/edit <filepath>`: Edit existing files
@@ -37,30 +39,40 @@ I see this framework as more suitable for people who actually want to code with 
    ```
    pip install -r requirements.txt
    ```
-3. Rename the .env.example to .env and add your API Key:
+3. Rename the .env.example to .env and add your API Keys:
    ```
-   OPENROUTER_API_KEY="Your key"
+   DEFAULT_API_KEY="Your default model API key"
+   EDITOR_API_KEY="Your editor model API key"
    ```
-4. Run the main script:
+4. Run the main script with optional configuration:
    ```
-   python main.py [--model MODEL] [--openai-api-base BASE_URL] [--openai-api-key API_KEY]
+   python main.py [--default-model MODEL] [--editor-model MODEL] [--default-api-base BASE_URL] [--editor-api-base BASE_URL] [--default-api-key API_KEY] [--editor-api-key API_KEY]
    ```
 
 ## 🔧 Configuration
-Omni Engineer now uses LiteLLM, which provides a unified interface to various AI models and providers. This allows for greater flexibility in model selection and API usage. The script accepts the following command-line parameters:
+Omni Engineer now supports model-specific parameters, allowing for greater flexibility in AI model selection and configuration. The script accepts the following command-line parameters:
 
-- `--model`: Specify the AI model to use (default is "claude-3-sonnet-20240229")
-- `--openai-api-base`: Set the base URL for the API (useful for using different providers)
-- `--openai-api-key`: Provide the API key directly in the command line
+- `--default-model`: Specify the AI model to use for default completion (default is "claude-3-sonnet-20240229")
+- `--editor-model`: Specify the AI model to use for editor completion (default is "openai/gcp/gemini-pro-1.5")
+- `--default-api-base`: Set the base URL for the default model API
+- `--editor-api-base`: Set the base URL for the editor model API
+- `--default-api-key`: Provide the API key for the default model
+- `--editor-api-key`: Provide the API key for the editor model
 
 Example usage:
 ```
-python main.py --model gpt-4 --openai-api-base https://api.openai.com/v1 --openai-api-key your_api_key_here
+python main.py --default-model gpt-4 --editor-model claude-3-opus-20240229 --default-api-base https://api.openai.com/v1 --editor-api-base https://api.anthropic.com --default-api-key your_openai_key --editor-api-key your_anthropic_key
 ```
 
-These parameters allow you to easily switch between different models or providers without modifying the code.
+These parameters allow you to easily configure different models for various tasks within the application. You can also set these values in the .env file for persistent configuration.
 ## 📚 Usage
-After launching the console, enter commands or questions as needed. The AI will respond accordingly, assisting with various development tasks.
+After launching the console, enter commands or questions as needed. The AI will respond accordingly, assisting with various development tasks. You can use different models for default interactions and editing tasks by configuring the appropriate parameters.
+
+### Model-Specific Parameters
+- Default Model: Used for general interactions and responses.
+- Editor Model: Specifically used for code editing tasks.
+
+You can configure these models separately, allowing you to optimize performance for different types of tasks. For example, you might use a more powerful model for complex code editing, while using a faster model for general queries.
 ## 🤖 AI Models
 Omni Engineer utilizes OpenRouter to access a variety of AI models. For detailed information on available models and their capabilities, refer to [OpenRouter's documentation](https://openrouter.ai/models).
 ## 🐛 Issue Reporting
