@@ -1,6 +1,9 @@
 import os
 import sys
 import argparse
+from dotenv import load_dotenv
+
+load_dotenv()  # This will load environment variables from a .env file if present
 from litellm import completion
 from dotenv import load_dotenv
 from colorama import init, Fore, Back, Style
@@ -220,13 +223,13 @@ def print_colored(text, color=Fore.WHITE, style=Style.NORMAL, end='\n'):
     print(f"{style}{color}{text}{Style.RESET_ALL}", end=end)
 
 
-def get_streaming_response(messages, model):
+def get_streaming_response(messages, model, api_base, api_key):
     stream = completion(
         model=model,
         messages=messages,
         stream=True,
-        base_url=BASE_URL,
-        api_key=API_KEY,
+        base_url=api_base,
+        api_key=api_key,
     )
     full_response = ""
     for chunk in stream:
@@ -367,6 +370,8 @@ async def handle_edit_command(default_chat_history, editor_chat_history, filepat
             model=EDITOR_MODEL,
             messages=editor_chat_history,
             stream=True,
+            base_url=EDITOR_API_BASE,
+            api_key=EDITOR_API_KEY,
         ):
             if chunk.choices[0].delta.content:
                 content = chunk.choices[0].delta.content
@@ -654,17 +659,23 @@ def print_welcome_message():
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="AI Developer Console")
-    parser.add_argument("--model", default=DEFAULT_MODEL, help="Model to use for completion")
-    parser.add_argument("--openai-api-base", help="Base URL for the OpenAI API")
-    parser.add_argument("--openai-api-key", help="API key for OpenAI")
+    parser.add_argument("--default-model", default=os.getenv("DEFAULT_MODEL", DEFAULT_MODEL), help="Model to use for default completion")
+    parser.add_argument("--editor-model", default=os.getenv("EDITOR_MODEL", EDITOR_MODEL), help="Model to use for editor completion")
+    parser.add_argument("--default-api-base", default=os.getenv("DEFAULT_API_BASE"), help="Base URL for the default model API")
+    parser.add_argument("--editor-api-base", default=os.getenv("EDITOR_API_BASE"), help="Base URL for the editor model API")
+    parser.add_argument("--default-api-key", default=os.getenv("DEFAULT_API_KEY"), help="API key for default model")
+    parser.add_argument("--editor-api-key", default=os.getenv("EDITOR_API_KEY"), help="API key for editor model")
     return parser.parse_args()
 
 async def main():
     args = parse_arguments()
-    global DEFAULT_MODEL, BASE_URL, API_KEY
-    DEFAULT_MODEL = args.model
-    BASE_URL = args.openai_api_base
-    API_KEY = args.openai_api_key
+    global DEFAULT_MODEL, EDITOR_MODEL, DEFAULT_API_BASE, EDITOR_API_BASE, DEFAULT_API_KEY, EDITOR_API_KEY
+    DEFAULT_MODEL = args.default_model
+    EDITOR_MODEL = args.editor_model
+    DEFAULT_API_BASE = args.default_api_base
+    EDITOR_API_BASE = args.editor_api_base
+    DEFAULT_API_KEY = args.default_api_key
+    EDITOR_API_KEY = args.editor_api_key
 
     default_chat_history = [{"role": "system", "content": SYSTEM_PROMPT}]
     editor_chat_history = [{"role": "system", "content": EDITOR_PROMPT}]
@@ -751,7 +762,7 @@ async def main():
         print_colored("\n🤖 Assistant:", Fore.BLUE)
         try:
             default_chat_history.append({"role": "user", "content": prompt})
-            response = get_streaming_response(default_chat_history, DEFAULT_MODEL)
+            response = get_streaming_response(default_chat_history, DEFAULT_MODEL, DEFAULT_API_BASE, DEFAULT_API_KEY)
             default_chat_history.append({"role": "assistant", "content": response})
         except Exception as e:
             print_colored(f"Error: {e}. Please try again.", Fore.RED)
