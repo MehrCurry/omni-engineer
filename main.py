@@ -27,14 +27,14 @@ from prompt_toolkit.application.current import get_app
 
 
 
-is_diff_on = True  
+is_diff_on = True
 
 init(autoreset=True)
 load_dotenv()
 # LiteLLM doesn't require a client initialization
 
 DEFAULT_MODEL = "claude-3-sonnet-20240229"
-EDITOR_MODEL = "gemini-pro-1.5"
+EDITOR_MODEL = "openai/gcp/gemini-pro-1.5"
 BASE_URL = None
 API_KEY = None
 # Other common models:
@@ -69,8 +69,8 @@ ULTRA IMPORTANT:
 - ULTRA IMPORTANT you NEVER!!! add ``` at the start or end of the file meaning you never add anything that is not the code at the start or end of the file.
 - Never change imports or function definitions unless explicitly instructed"""
 
-added_files = []  
-stored_searches = {}  
+added_files = []
+stored_searches = {}
 file_templates = {
     "python": "def main():\n    pass\n\nif __name__ == \"__main__\":\n    main()",
     "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Document</title>\n</head>\n<body>\n    \n</body>\n</html>",
@@ -84,7 +84,7 @@ session = PromptSession(history=command_history)
 
 async def get_input_async(message):
     session = PromptSession()
-    result = await session.prompt_async(HTML(f"<ansired>{message}</ansired> "), 
+    result = await session.prompt_async(HTML(f"<ansired>{message}</ansired> "),
         auto_suggest=AutoSuggestFromHistory(),
         completer=commands,
         refresh_interval=0.5)
@@ -103,22 +103,22 @@ def encode_image(image_path):
 def validate_image_url(url):
     try:
         response = requests.get(
-            url, 
-            stream=True, 
+            url,
+            stream=True,
             timeout=5,
             headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.28 Safari/537.36'}
         )
-        response.raise_for_status() 
-        
+        response.raise_for_status()
+
         # Check Content-Type
         content_type = response.headers.get('Content-Type', '').lower()
-        if content_type.startswith(('image/', 'application/octet-stream')):  
+        if content_type.startswith(('image/', 'application/octet-stream')):
             return True
 
         # Force load it as an image
         image = Image.open(BytesIO(response.content))
         image.verify()
-        
+
         return True
 
     except requests.exceptions.RequestException as e:
@@ -145,7 +145,7 @@ async def handle_image_command(filepaths_or_urls, default_chat_history):
     if not filepaths_or_urls:
         print_colored("❌ No images or URLs provided.", Fore.RED)
         return default_chat_history
-    
+
     processed_images = 0
     success_images = 0
 
@@ -154,19 +154,19 @@ async def handle_image_command(filepaths_or_urls, default_chat_history):
             if is_url(image_path):  # URL-based
                 if validate_image_url(image_path):
                     stored_images[f"image_{len(stored_images) + 1}"] = {
-                        "type": "image", 
-                        "source": "url", 
+                        "type": "image",
+                        "source": "url",
                         "content": image_path
                     }
                     default_chat_history.append({
-                        "role": "user", 
+                        "role": "user",
                         "content": [{"type": "image_url", "image_url": {"url": image_path}}]
                     })
                     print_colored(f"✅ URL-based image {idx} added successfully!", Fore.GREEN)
                     success_images += 1
                 else:
                     print_colored(f"❌ {image_path} isn't a valid image URL. Skipping.", Fore.RED)
-            
+
             else:  # Local filepath
                 image_content = encode_image(image_path)
                 if image_content:
@@ -176,16 +176,16 @@ async def handle_image_command(filepaths_or_urls, default_chat_history):
                             img_format = img.format.lower()
                             if img_format not in ['jpeg', 'jpg', 'png', 'webp', 'gif']:
                                 raise ValueError("Unsupported image format")
-                            
+
                             data_uri = f"data:image/{img_format};base64,{image_content}"
-                            
+
                             stored_images[f"image_{len(stored_images) + 1}"] = {
-                                "type": "image", 
-                                "source": "local", 
+                                "type": "image",
+                                "source": "local",
                                 "content": data_uri
                             }
                             default_chat_history.append({
-                                "role": "user", 
+                                "role": "user",
                                 "content": [{
                                     "type": "image_url",
                                     "image_url": {"url": data_uri}
@@ -197,14 +197,14 @@ async def handle_image_command(filepaths_or_urls, default_chat_history):
                         print_colored(f"❌ {image_path} isn't a valid image. Error: {e}. Skipping.", Fore.RED)
                 else:
                     print_colored(f"❌ Failed loading: {image_path}", Fore.RED)
-        
+
         except Exception as e:
             print_colored(f"❌ Unexpected error processing {image_path}: {e}. Skipping.", Fore.RED)
 
         processed_images += 1  # Always increment, even if we skip
 
     print_colored(f"🖼️ {processed_images} images processed. {success_images} added successfully. {len(stored_images)} total images in memory!", Fore.CYAN)
-    
+
     return default_chat_history
 
 async def aget_results(word):
@@ -254,7 +254,7 @@ def write_file_content(filepath, content):
         return True
     except IOError:
         return False
-    
+
 def is_text_file(file_path, sample_size=8192, text_characters=set(bytes(range(32,127)) + b'\n\r\t\b')):
     """Determine whether a file is text or binary."""
     try:
@@ -304,7 +304,7 @@ async def handle_add_command(chat_history, *paths):
         for fp, content in contents:
             new_context += f"""The following file has been added: {fp}:
 \n{content}\n\n"""
-            
+
         chat_history.append({"role": "user", "content": new_context})
         print_colored(f"✅ Added {len(contents)} files to knowledge!", Fore.GREEN)
     else:
@@ -361,36 +361,36 @@ async def handle_edit_command(default_chat_history, editor_chat_history, filepat
         lines = current_content.split('\n')
         buffer = ""
         result = ""
-        line_index = 0  
+        line_index = 0
 
         for chunk in completion(
-            model=EDITOR_MODEL,   
+            model=EDITOR_MODEL,
             messages=editor_chat_history,
             stream=True,
         ):
             if chunk.choices[0].delta.content:
                 content = chunk.choices[0].delta.content
-                print_colored(content, end="")  
+                print_colored(content, end="")
                 buffer += content
-                
+
                 while '\n' in buffer:
                     line, buffer = buffer.split('\n', 1)
-                    if line_index < len(lines):  
-                        lines[line_index] = line   
-                        write_file_content(filepath, '\n'.join(lines))  
+                    if line_index < len(lines):
+                        lines[line_index] = line
+                        write_file_content(filepath, '\n'.join(lines))
                         print_colored(f"✏️ Updated Line {line_index+1}: {line[:50]}...", Fore.CYAN)  # Show debug
                         line_index += 1
                     else:
-                        lines.append(line)  
-                        write_file_content(filepath, '\n'.join(lines)) 
-                        print_colored(f"➕ NEW Line {line_index+1}: {line[:50]}...", Fore.YELLOW)  
+                        lines.append(line)
+                        write_file_content(filepath, '\n'.join(lines))
+                        print_colored(f"➕ NEW Line {line_index+1}: {line[:50]}...", Fore.YELLOW)
                         line_index += 1
 
         result = '\n'.join(lines)
-        undo_history[filepath] = current_content   # Store undo 
+        undo_history[filepath] = current_content   # Store undo
         editor_chat_history.append({"role": "assistant", "content": result})
 
-        if is_diff_on:  
+        if is_diff_on:
             display_diff(current_content, result)  # Show final diff if it's on
 
         print_colored(f"✅ {filepath} successfully edited!", Fore.GREEN)
@@ -402,10 +402,10 @@ async def handle_new_command(default_chat_history, editor_chat_history, filepath
     print_colored(f"🆕 Creating new files: {', '.join(filepaths)}", Fore.BLUE)
     created_files = []
     for filepath in filepaths:
-        file_ext = os.path.splitext(filepath)[1][1:]  
-        template = file_templates.get(file_ext, "")  
+        file_ext = os.path.splitext(filepath)[1][1:]
+        template = file_templates.get(file_ext, "")
         try:
-            with open(filepath, 'x') as f:  
+            with open(filepath, 'x') as f:
                 f.write(template)
             print_colored(f"✅ Created {filepath} with template", Fore.GREEN)
             created_files.append(filepath)
@@ -433,12 +433,12 @@ async def handle_clear_command():
         added_files.clear()
         cleared_something = True
         print_colored("✅ Cleared memory of added files.", Fore.GREEN)
-    
+
     if stored_searches:
         stored_searches.clear()
         cleared_something = True
         print_colored("✅ Cleared stored searches.", Fore.GREEN)
-    
+
     if stored_images:  # New!
         image_count = len(stored_images)
         stored_images.clear()
@@ -617,14 +617,14 @@ def print_welcome_message():
     print_colored(
         "🔮 Welcome to the Assistant Developer Console! 🔮", Fore.MAGENTA, Style.BRIGHT
     )
-    
+
 
     console = Console()
     table = Table()
-    
+
     table.add_column("Command", style="cyan", no_wrap=True)
     table.add_column("Description")
-    
+
     table.add_row("/add", "Add files to AI's knowledge base")
     table.add_row("/edit", "Edit existing files")
     table.add_row("/new", "Create new files")
@@ -638,9 +638,9 @@ def print_welcome_message():
     table.add_row("/load", "Load chat history from a file")
     table.add_row("/undo", "Undo last edit for a specific file")
     table.add_row("exit", "Exit the application")
-    
+
     console.print(table)
-    
+
     print_colored(
         "For any other input, the AI will respond to your query or command.",
         Fore.YELLOW,
@@ -683,7 +683,7 @@ async def main():
             )
             break
 
-    
+
 
         if prompt.startswith("/add "):
             filepaths = prompt.split("/add ", 1)[1].strip().split()
@@ -716,7 +716,7 @@ async def main():
             default_chat_history, editor_chat_history = await handle_reset_command(  # Add await here
                 default_chat_history, editor_chat_history
             )
-            default_chat_history = [{"role": "system", "content": SYSTEM_PROMPT}]  
+            default_chat_history = [{"role": "system", "content": SYSTEM_PROMPT}]
             editor_chat_history = [{"role": "system", "content": EDITOR_PROMPT}]
             continue
 
